@@ -1,121 +1,330 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const CardVaultApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CardVaultApp extends StatelessWidget {
+  const CardVaultApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'CardVault',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0B5D4D)),
+        scaffoldBackgroundColor: const Color(0xFFF5F7F6),
+        fontFamily: 'Arial',
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CardVaultHome(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class CardVaultHome extends StatefulWidget {
+  const CardVaultHome({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CardVaultHome> createState() => _CardVaultHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+class _CardVaultHomeState extends State<CardVaultHome> {
+  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        backgroundColor: const Color(0xFF0B5D4D),
+        foregroundColor: Colors.white,
+        title: const Text(
+          'CardVault',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_outlined),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Color(0xFF0B5D4D)),
+            ),
+          ),
+        ],
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('You have pushed the button this many times:'),
+            const Text(
+              'Welcome back, Deep 👋',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 6),
+
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              'Manage your cards securely',
+              style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+            ),
+
+            const SizedBox(height: 24),
+
+            const Text(
+              'My Cards',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Credit Card
+            _buildCard(
+              cardType: 'CREDIT CARD',
+              cardNumber: '••••  ••••  ••••  4582',
+              holder: 'DEEP RAJPUT',
+              expiry: '09/29',
+              available: '₹82,450',
+            ),
+
+            const SizedBox(height: 16),
+
+            // Debit Card
+            _buildCard(
+              cardType: 'DEBIT CARD',
+              cardNumber: '••••  ••••  ••••  7291',
+              holder: 'DEEP RAJPUT',
+              expiry: '11/28',
+              available: '₹45,230',
+            ),
+
+            const SizedBox(height: 28),
+
+            const Text(
+              'Available Credit',
+              style: TextStyle(fontSize: 15, color: Colors.grey),
+            ),
+
+            const SizedBox(height: 5),
+
+            const Text(
+              '₹82,450',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 28),
+
+            const Text(
+              'Recent Transactions',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            _transaction(
+              icon: Icons.shopping_bag_outlined,
+              title: 'Amazon',
+              date: 'Today',
+              amount: '- ₹1,299',
+            ),
+
+            _transaction(
+              icon: Icons.fastfood_outlined,
+              title: 'Swiggy',
+              date: 'Yesterday',
+              amount: '- ₹450',
+            ),
+
+            _transaction(
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'Salary',
+              date: '20 Sep',
+              amount: '+ ₹82,000',
+              positive: true,
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.credit_card_outlined),
+            selectedIcon: Icon(Icons.credit_card),
+            label: 'Cards',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Activity',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard({
+    required String cardType,
+    required String cardNumber,
+    required String holder,
+    required String expiry,
+    required String available,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: 210,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B5D4D), Color(0xFF073B32)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                cardType,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text(
+                'VISA',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          const Icon(Icons.contactless, color: Colors.white70, size: 28),
+
+          const SizedBox(height: 8),
+
+          Text(
+            cardNumber,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 19,
+              letterSpacing: 1.5,
+            ),
+          ),
+
+          const Spacer(),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'CARD HOLDER',
+                    style: TextStyle(color: Colors.white54, fontSize: 8),
+                  ),
+                  Text(
+                    holder,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text(
+                    'EXPIRES',
+                    style: TextStyle(color: Colors.white54, fontSize: 8),
+                  ),
+                  Text(
+                    expiry,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _transaction({
+    required IconData icon,
+    required String title,
+    required String date,
+    required String amount,
+    bool positive = false,
+  }) {
+    return Card(
+      elevation: 0,
+      color: Colors.white,
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: const Color(0xFFE6F2EF),
+          child: Icon(icon, color: const Color(0xFF0B5D4D)),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(date),
+        trailing: Text(
+          amount,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: positive ? Colors.green : Colors.black87,
+          ),
+        ),
       ),
     );
   }
