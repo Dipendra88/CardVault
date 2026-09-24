@@ -18,10 +18,295 @@ class CardVaultApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F7F6),
         fontFamily: 'Arial',
       ),
-      home: const CardVaultHome(),
+      home: const PinAuthenticationScreen(),
     );
   }
 }
+
+// ============================================================
+// PIN AUTHENTICATION
+// ============================================================
+
+class PinAuthenticationScreen extends StatefulWidget {
+  const PinAuthenticationScreen({super.key});
+
+  @override
+  State<PinAuthenticationScreen> createState() =>
+      _PinAuthenticationScreenState();
+}
+
+class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
+  static const String correctPin = '2580';
+
+  String enteredPin = '';
+  String? errorMessage;
+  bool isAuthenticating = false;
+
+  void _addDigit(String digit) {
+    if (isAuthenticating) return;
+
+    if (enteredPin.length < 4) {
+      setState(() {
+        errorMessage = null;
+        enteredPin += digit;
+      });
+
+      if (enteredPin.length == 4) {
+        _authenticate();
+      }
+    }
+  }
+
+  void _deleteDigit() {
+    if (isAuthenticating || enteredPin.isEmpty) return;
+
+    setState(() {
+      enteredPin = enteredPin.substring(0, enteredPin.length - 1);
+      errorMessage = null;
+    });
+  }
+
+  Future<void> _authenticate() async {
+    setState(() {
+      isAuthenticating = true;
+    });
+
+    // Small delay to simulate authentication processing.
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    if (!mounted) return;
+
+    if (enteredPin == correctPin) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const CardVaultHome()),
+      );
+    } else {
+      setState(() {
+        enteredPin = '';
+        errorMessage = 'Incorrect PIN. Please try again.';
+        isAuthenticating = false;
+      });
+    }
+  }
+
+  Widget _pinDot(int index) {
+    final bool filled = index < enteredPin.length;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
+      width: 18,
+      height: 18,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: filled ? const Color(0xFF0B5D4D) : Colors.transparent,
+        border: Border.all(color: const Color(0xFF0B5D4D), width: 2),
+      ),
+    );
+  }
+
+  Widget _numberButton(String number) {
+    return SizedBox(
+      width: 72,
+      height: 72,
+      child: ElevatedButton(
+        onPressed: () => _addDigit(number),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF073B32),
+          shape: const CircleBorder(),
+        ),
+        child: Text(
+          number,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F6),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Vault icon
+                Container(
+                  width: 82,
+                  height: 82,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0B5D4D),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 15,
+                        offset: Offset(0, 7),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.lock_outline,
+                    color: Colors.white,
+                    size: 42,
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                const Text(
+                  'CardVault',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF073B32),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Your cards. Your vault. Your control.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                ),
+
+                const SizedBox(height: 36),
+
+                const Text(
+                  'Enter your PIN',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Unlock your CardVault',
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                ),
+
+                const SizedBox(height: 24),
+
+                // PIN dots
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [_pinDot(0), _pinDot(1), _pinDot(2), _pinDot(3)],
+                ),
+
+                const SizedBox(height: 12),
+
+                if (errorMessage != null)
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                else
+                  const SizedBox(height: 19),
+
+                const SizedBox(height: 18),
+
+                // Number pad
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _numberButton('1'),
+                    const SizedBox(width: 18),
+                    _numberButton('2'),
+                    const SizedBox(width: 18),
+                    _numberButton('3'),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _numberButton('4'),
+                    const SizedBox(width: 18),
+                    _numberButton('5'),
+                    const SizedBox(width: 18),
+                    _numberButton('6'),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _numberButton('7'),
+                    const SizedBox(width: 18),
+                    _numberButton('8'),
+                    const SizedBox(width: 18),
+                    _numberButton('9'),
+                  ],
+                ),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 72, height: 72),
+                    const SizedBox(width: 18),
+                    _numberButton('0'),
+                    const SizedBox(width: 18),
+                    SizedBox(
+                      width: 72,
+                      height: 72,
+                      child: IconButton(
+                        onPressed: _deleteDigit,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                        ),
+                        icon: const Icon(
+                          Icons.backspace_outlined,
+                          color: Color(0xFF073B32),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                if (isAuthenticating)
+                  const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Color(0xFF0B5D4D),
+                    ),
+                  )
+                else
+                  Text(
+                    'Secure PIN authentication',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// CARDVAULT HOME
+// ============================================================
 
 class CardVaultHome extends StatefulWidget {
   const CardVaultHome({super.key});
