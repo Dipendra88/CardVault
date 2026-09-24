@@ -36,29 +36,26 @@ class PinAuthenticationScreen extends StatefulWidget {
 }
 
 class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
-  static const String correctPin = '2580';
+  final String correctPin = '2580';
 
   String enteredPin = '';
   String? errorMessage;
-  bool isAuthenticating = false;
 
   void _addDigit(String digit) {
-    if (isAuthenticating) return;
+    if (enteredPin.length >= 4) return;
 
-    if (enteredPin.length < 4) {
-      setState(() {
-        errorMessage = null;
-        enteredPin += digit;
-      });
+    setState(() {
+      errorMessage = null;
+      enteredPin += digit;
+    });
 
-      if (enteredPin.length == 4) {
-        _authenticate();
-      }
+    if (enteredPin.length == 4) {
+      Future.delayed(const Duration(milliseconds: 400), _authenticate);
     }
   }
 
   void _deleteDigit() {
-    if (isAuthenticating || enteredPin.isEmpty) return;
+    if (enteredPin.isEmpty) return;
 
     setState(() {
       enteredPin = enteredPin.substring(0, enteredPin.length - 1);
@@ -66,14 +63,7 @@ class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
     });
   }
 
-  Future<void> _authenticate() async {
-    setState(() {
-      isAuthenticating = true;
-    });
-
-    // Small delay to simulate authentication processing.
-    await Future.delayed(const Duration(milliseconds: 400));
-
+  void _authenticate() {
     if (!mounted) return;
 
     if (enteredPin == correctPin) {
@@ -84,41 +74,38 @@ class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
       setState(() {
         enteredPin = '';
         errorMessage = 'Incorrect PIN. Please try again.';
-        isAuthenticating = false;
       });
     }
   }
 
   Widget _pinDot(int index) {
-    final bool filled = index < enteredPin.length;
+    final filled = index < enteredPin.length;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: 18,
-      height: 18,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+    return Container(
+      width: 16,
+      height: 16,
+      margin: const EdgeInsets.symmetric(horizontal: 7),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: filled ? const Color(0xFF0B5D4D) : Colors.transparent,
-        border: Border.all(color: const Color(0xFF0B5D4D), width: 2),
+        color: filled ? const Color(0xFF0B5D4D) : Colors.grey.shade300,
       ),
     );
   }
 
-  Widget _numberButton(String number) {
+  Widget _numberButton(String value) {
     return SizedBox(
-      width: 72,
-      height: 72,
+      width: 75,
+      height: 75,
       child: ElevatedButton(
-        onPressed: () => _addDigit(number),
+        onPressed: () => _addDigit(value),
         style: ElevatedButton.styleFrom(
-          elevation: 0,
           backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF073B32),
+          foregroundColor: Colors.black87,
+          elevation: 1,
           shape: const CircleBorder(),
         ),
         child: Text(
-          number,
+          value,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
         ),
       ),
@@ -128,174 +115,121 @@ class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F6),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Vault icon
-                Container(
-                  width: 82,
-                  height: 82,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B5D4D),
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 15,
-                        offset: Offset(0, 7),
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B5D4D),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Icon(
+                      Icons.lock_outline,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'CardVault',
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Unlock your CardVault',
+                    style: TextStyle(fontSize: 17, color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    'Enter your PIN',
+                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(4, (index) => _pinDot(index)),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  if (errorMessage != null)
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                  const SizedBox(height: 28),
+
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _numberButton('1'),
+                          _numberButton('2'),
+                          _numberButton('3'),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _numberButton('4'),
+                          _numberButton('5'),
+                          _numberButton('6'),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _numberButton('7'),
+                          _numberButton('8'),
+                          _numberButton('9'),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          const SizedBox(width: 75),
+                          _numberButton('0'),
+                          SizedBox(
+                            width: 75,
+                            height: 75,
+                            child: IconButton(
+                              onPressed: _deleteDigit,
+                              icon: const Icon(
+                                Icons.backspace_outlined,
+                                size: 27,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.lock_outline,
-                    color: Colors.white,
-                    size: 42,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'CardVault',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF073B32),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Your cards. Your vault. Your control.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
-                ),
-
-                const SizedBox(height: 36),
-
-                const Text(
-                  'Enter your PIN',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Unlock your CardVault',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                ),
-
-                const SizedBox(height: 24),
-
-                // PIN dots
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [_pinDot(0), _pinDot(1), _pinDot(2), _pinDot(3)],
-                ),
-
-                const SizedBox(height: 12),
-
-                if (errorMessage != null)
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  )
-                else
-                  const SizedBox(height: 19),
-
-                const SizedBox(height: 18),
-
-                // Number pad
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _numberButton('1'),
-                    const SizedBox(width: 18),
-                    _numberButton('2'),
-                    const SizedBox(width: 18),
-                    _numberButton('3'),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _numberButton('4'),
-                    const SizedBox(width: 18),
-                    _numberButton('5'),
-                    const SizedBox(width: 18),
-                    _numberButton('6'),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _numberButton('7'),
-                    const SizedBox(width: 18),
-                    _numberButton('8'),
-                    const SizedBox(width: 18),
-                    _numberButton('9'),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 72, height: 72),
-                    const SizedBox(width: 18),
-                    _numberButton('0'),
-                    const SizedBox(width: 18),
-                    SizedBox(
-                      width: 72,
-                      height: 72,
-                      child: IconButton(
-                        onPressed: _deleteDigit,
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                        ),
-                        icon: const Icon(
-                          Icons.backspace_outlined,
-                          color: Color(0xFF073B32),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
-                if (isAuthenticating)
-                  const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Color(0xFF0B5D4D),
-                    ),
-                  )
-                else
-                  Text(
-                    'Secure PIN authentication',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -305,7 +239,7 @@ class _PinAuthenticationScreenState extends State<PinAuthenticationScreen> {
 }
 
 // ============================================================
-// CARDVAULT HOME
+// HOME + BOTTOM NAVIGATION
 // ============================================================
 
 class CardVaultHome extends StatefulWidget {
@@ -316,48 +250,24 @@ class CardVaultHome extends StatefulWidget {
 }
 
 class _CardVaultHomeState extends State<CardVaultHome> {
-  int selectedIndex = 0;
+  int currentIndex = 0;
 
-  final List<String> pageTitles = [
-    'CardVault',
-    'My Cards',
-    'Activity',
-    'Profile',
+  final List<Widget> screens = const [
+    HomeScreen(),
+    CardsScreen(),
+    ActivityScreen(),
+    ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0B5D4D),
-        foregroundColor: Colors.white,
-        title: Text(
-          pageTitles[selectedIndex],
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_outlined),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Color(0xFF0B5D4D)),
-            ),
-          ),
-        ],
-      ),
-
-      body: _buildCurrentPage(),
-
+      body: screens[currentIndex],
       bottomNavigationBar: NavigationBar(
-        selectedIndex: selectedIndex,
+        selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           setState(() {
-            selectedIndex = index;
+            currentIndex = index;
           });
         },
         destinations: const [
@@ -385,25 +295,6 @@ class _CardVaultHomeState extends State<CardVaultHome> {
       ),
     );
   }
-
-  Widget _buildCurrentPage() {
-    switch (selectedIndex) {
-      case 0:
-        return const HomeScreen();
-
-      case 1:
-        return const CardsScreen();
-
-      case 2:
-        return const ActivityScreen();
-
-      case 3:
-        return const ProfileScreen();
-
-      default:
-        return const HomeScreen();
-    }
-  }
 }
 
 // ============================================================
@@ -415,233 +306,242 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'CardVault',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Welcome back, Deep 👋',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(
+              'Here is your financial overview',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
+            ),
+
+            const SizedBox(height: 24),
+
+            Row(
+              children: [
+                Expanded(
+                  child: _summaryCard(
+                    title: 'Available Credit',
+                    amount: '₹82,450',
+                    icon: Icons.account_balance_wallet_outlined,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _summaryCard(
+                    title: 'Debit Balance',
+                    amount: '₹45,230',
+                    icon: Icons.account_balance_outlined,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 28),
+
+            const Text(
+              'My Cards',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 14),
+
+            _homeCard(
+              cardType: 'CREDIT',
+              number: '•••• •••• •••• 4582',
+              expiry: '09/29',
+              available: '₹82,450',
+              gradient: const [Color(0xFF0B5D4D), Color(0xFF083F35)],
+            ),
+
+            const SizedBox(height: 16),
+
+            _homeCard(
+              cardType: 'DEBIT',
+              number: '•••• •••• •••• 7291',
+              expiry: '11/28',
+              available: '₹45,230',
+              gradient: const [Color(0xFF243B53), Color(0xFF102A43)],
+            ),
+
+            const SizedBox(height: 28),
+
+            const Text(
+              'Recent Transactions',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            _transactionTile(context, transaction: transactions[0]),
+            _transactionTile(context, transaction: transactions[1]),
+            _transactionTile(context, transaction: transactions[2]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryCard({
+    required String title,
+    required String amount,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Welcome back, Deep 👋',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            'Manage your cards securely',
-            style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
-          ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'My Cards',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
+          Icon(icon, color: const Color(0xFF0B5D4D)),
           const SizedBox(height: 14),
-
-          _buildCard(
-            cardType: 'CREDIT CARD',
-            cardNumber: '••••  ••••  ••••  4582',
-            holder: 'DEEP RAJPUT',
-            expiry: '09/29',
+          Text(
+            title,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
-
-          const SizedBox(height: 16),
-
-          _buildCard(
-            cardType: 'DEBIT CARD',
-            cardNumber: '••••  ••••  ••••  7291',
-            holder: 'DEEP RAJPUT',
-            expiry: '11/28',
-          ),
-
-          const SizedBox(height: 28),
-
-          const Text(
-            'Available Credit',
-            style: TextStyle(fontSize: 15, color: Colors.grey),
-          ),
-
           const SizedBox(height: 5),
-
-          const Text(
-            '₹82,450',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 28),
-
-          const Text(
-            'Recent Transactions',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 10),
-
-          _transaction(
-            icon: Icons.shopping_bag_outlined,
-            title: 'Amazon',
-            date: 'Today',
-            amount: '- ₹1,299',
-          ),
-
-          _transaction(
-            icon: Icons.fastfood_outlined,
-            title: 'Swiggy',
-            date: 'Yesterday',
-            amount: '- ₹450',
-          ),
-
-          _transaction(
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'Salary',
-            date: '20 Sep',
-            amount: '+ ₹82,000',
-            positive: true,
+          Text(
+            amount,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCard({
+  Widget _homeCard({
     required String cardType,
-    required String cardNumber,
-    required String holder,
+    required String number,
     required String expiry,
+    required String available,
+    required List<Color> gradient,
   }) {
     return Container(
+      height: 190,
       width: double.infinity,
-      height: 210,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0B5D4D), Color(0xFF073B32)],
+        gradient: LinearGradient(
+          colors: gradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black26,
+            color: Colors.black.withValues(alpha: 0.12),
             blurRadius: 12,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                cardType,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Text(
-                'VISA',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
-          ),
-
-          const Spacer(),
-
-          const Icon(Icons.contactless, color: Colors.white70, size: 28),
-
-          const SizedBox(height: 8),
-
           Text(
-            cardNumber,
+            cardType,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          Text(
+            number,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 19,
+              fontSize: 20,
               letterSpacing: 1.5,
             ),
           ),
-
-          const Spacer(),
-
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'CARD HOLDER',
-                    style: TextStyle(color: Colors.white54, fontSize: 8),
-                  ),
-                  Text(
-                    holder,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              Text(
+                'DEEP RAJPUT',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    'EXPIRES',
-                    style: TextStyle(color: Colors.white54, fontSize: 8),
-                  ),
-                  Text(
-                    expiry,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              const Spacer(),
+              Text(expiry, style: const TextStyle(color: Colors.white)),
             ],
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Available $available',
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
     );
   }
 
-  Widget _transaction({
-    required IconData icon,
-    required String title,
-    required String date,
-    required String amount,
-    bool positive = false,
+  Widget _transactionTile(
+    BuildContext context, {
+    required Transaction transaction,
   }) {
     return Card(
       elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  TransactionDetailsScreen(transaction: transaction),
+            ),
+          );
+        },
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE6F2EF),
-          child: Icon(icon, color: const Color(0xFF0B5D4D)),
+          backgroundColor: transaction.isIncome
+              ? Colors.green.shade100
+              : Colors.grey.shade200,
+          child: Icon(
+            transaction.icon,
+            color: transaction.isIncome
+                ? Colors.green.shade700
+                : Colors.black87,
+          ),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(date),
+        title: Text(
+          transaction.merchant,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(transaction.category),
         trailing: Text(
-          amount,
+          transaction.formattedAmount,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: positive ? Colors.green : Colors.black87,
+            color: transaction.isIncome
+                ? Colors.green.shade700
+                : Colors.black87,
           ),
         ),
       ),
@@ -661,56 +561,45 @@ class CardsScreen extends StatefulWidget {
 }
 
 class _CardsScreenState extends State<CardsScreen> {
-  bool creditCardFrozen = false;
-  bool debitCardFrozen = false;
+  bool creditFrozen = false;
+  bool debitFrozen = false;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'My Cards',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
         children: [
-          const Text(
-            'Manage Your Cards',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 6),
-
-          Text(
-            'View and manage your debit and credit cards',
-            style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
-          ),
-
-          const SizedBox(height: 24),
-
-          _buildManagedCard(
-            cardType: 'CREDIT CARD',
-            cardNumber: '••••  ••••  ••••  4582',
-            holder: 'DEEP RAJPUT',
+          _cardSection(
+            type: 'Credit Card',
+            number: '•••• •••• •••• 4582',
             expiry: '09/29',
-            available: '₹82,450',
-            frozen: creditCardFrozen,
-            onFreezeChanged: (value) {
+            balance: '₹82,450',
+            frozen: creditFrozen,
+            gradient: const [Color(0xFF0B5D4D), Color(0xFF083F35)],
+            onChanged: (value) {
               setState(() {
-                creditCardFrozen = value;
+                creditFrozen = value;
               });
             },
           ),
-
-          const SizedBox(height: 24),
-
-          _buildManagedCard(
-            cardType: 'DEBIT CARD',
-            cardNumber: '••••  ••••  ••••  7291',
-            holder: 'DEEP RAJPUT',
+          const SizedBox(height: 20),
+          _cardSection(
+            type: 'Debit Card',
+            number: '•••• •••• •••• 7291',
             expiry: '11/28',
-            available: '₹45,230',
-            frozen: debitCardFrozen,
-            onFreezeChanged: (value) {
+            balance: '₹45,230',
+            frozen: debitFrozen,
+            gradient: const [Color(0xFF243B53), Color(0xFF102A43)],
+            onChanged: (value) {
               setState(() {
-                debitCardFrozen = value;
+                debitFrozen = value;
               });
             },
           ),
@@ -719,119 +608,65 @@ class _CardsScreenState extends State<CardsScreen> {
     );
   }
 
-  Widget _buildManagedCard({
-    required String cardType,
-    required String cardNumber,
-    required String holder,
+  Widget _cardSection({
+    required String type,
+    required String number,
     required String expiry,
-    required String available,
+    required String balance,
     required bool frozen,
-    required ValueChanged<bool> onFreezeChanged,
+    required List<Color> gradient,
+    required ValueChanged<bool> onChanged,
   }) {
     return Column(
       children: [
         Container(
-          width: double.infinity,
           height: 210,
-          padding: const EdgeInsets.all(22),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
             gradient: LinearGradient(
-              colors: frozen
-                  ? [Colors.grey.shade700, Colors.grey.shade900]
-                  : const [Color(0xFF0B5D4D), Color(0xFF073B32)],
+              colors: gradient,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 12,
-                offset: Offset(0, 6),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(22),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    cardType,
+                    type.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white70,
-                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    'VISA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
+                  const Spacer(),
+                  if (frozen) const Icon(Icons.lock, color: Colors.white),
                 ],
               ),
-
               const Spacer(),
-
-              const Icon(Icons.contactless, color: Colors.white70, size: 28),
-
-              const SizedBox(height: 8),
-
               Text(
-                cardNumber,
+                number,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 19,
+                  fontSize: 20,
                   letterSpacing: 1.5,
                 ),
               ),
-
-              const Spacer(),
-
+              const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'CARD HOLDER',
-                        style: TextStyle(color: Colors.white54, fontSize: 8),
-                      ),
-                      Text(
-                        holder,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'DEEP RAJPUT',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'EXPIRES',
-                        style: TextStyle(color: Colors.white54, fontSize: 8),
-                      ),
-                      Text(
-                        expiry,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                  const Spacer(),
+                  Text(expiry, style: const TextStyle(color: Colors.white)),
                 ],
               ),
             ],
@@ -842,51 +677,20 @@ class _CardsScreenState extends State<CardsScreen> {
 
         Card(
           elevation: 0,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: Color(0xFF0B5D4D),
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Available Credit',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      Text(
-                        available,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Column(
-                  children: [
-                    Switch(value: frozen, onChanged: onFreezeChanged),
-                    Text(
-                      frozen ? 'Frozen' : 'Active',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: frozen ? Colors.red : const Color(0xFF0B5D4D),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          child: SwitchListTile(
+            title: Text(
+              frozen ? 'Card Frozen' : 'Card Active',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              frozen
+                  ? 'Transactions are temporarily disabled'
+                  : 'Card is ready for transactions',
+            ),
+            value: frozen,
+            onChanged: onChanged,
+            secondary: Icon(
+              frozen ? Icons.lock_outline : Icons.lock_open_outlined,
             ),
           ),
         ),
@@ -899,96 +703,308 @@ class _CardsScreenState extends State<CardsScreen> {
 // ACTIVITY SCREEN
 // ============================================================
 
-class ActivityScreen extends StatelessWidget {
+class ActivityScreen extends StatefulWidget {
   const ActivityScreen({super.key});
 
   @override
+  State<ActivityScreen> createState() => _ActivityScreenState();
+}
+
+class _ActivityScreenState extends State<ActivityScreen> {
+  String searchQuery = '';
+  String selectedCategory = 'All';
+
+  List<Transaction> get filteredTransactions {
+    return transactions.where((transaction) {
+      final matchesSearch =
+          transaction.merchant.toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          ) ||
+          transaction.category.toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          );
+
+      final matchesCategory =
+          selectedCategory == 'All' || transaction.category == selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final categories = ['All', 'Shopping', 'Food', 'Income', 'Bills'];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Activity',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: Column(
         children: [
-          const Text(
-            'Activity',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search transactions...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        onPressed: () {
+                          setState(() {
+                            searchQuery = '';
+                          });
+                        },
+                        icon: const Icon(Icons.clear),
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
           ),
 
-          const SizedBox(height: 6),
+          SizedBox(
+            height: 55,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+             separatorBuilder: (_, _) =>
+    const SizedBox(width: 8),
+              itemBuilder: (context, index) {
+                final category = categories[index];
 
-          Text(
-            'Your recent card activity',
-            style: TextStyle(fontSize: 15, color: Colors.grey.shade600),
+                return ChoiceChip(
+                  label: Text(category),
+                  selected: selectedCategory == category,
+                  onSelected: (_) {
+                    setState(() {
+                      selectedCategory = category;
+                    });
+                  },
+                );
+              },
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const Divider(height: 1),
 
-          _activityItem(
-            icon: Icons.shopping_bag_outlined,
-            title: 'Amazon',
-            date: 'Today',
-            amount: '- ₹1,299',
-          ),
+          Expanded(
+            child: filteredTransactions.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off, size: 50, color: Colors.grey),
+                        SizedBox(height: 12),
+                        Text(
+                          'No transactions found',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredTransactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction = filteredTransactions[index];
 
-          _activityItem(
-            icon: Icons.fastfood_outlined,
-            title: 'Swiggy',
-            date: 'Yesterday',
-            amount: '- ₹450',
-          ),
-
-          _activityItem(
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'Salary',
-            date: '20 Sep',
-            amount: '+ ₹82,000',
-            positive: true,
-          ),
-
-          _activityItem(
-            icon: Icons.local_gas_station_outlined,
-            title: 'Fuel Station',
-            date: '18 Sep',
-            amount: '- ₹2,000',
-          ),
-
-          _activityItem(
-            icon: Icons.movie_outlined,
-            title: 'BookMyShow',
-            date: '17 Sep',
-            amount: '- ₹650',
+                      return _activityTransactionTile(transaction);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _activityItem({
-    required IconData icon,
-    required String title,
-    required String date,
-    required String amount,
-    bool positive = false,
-  }) {
+  Widget _activityTransactionTile(Transaction transaction) {
     return Card(
       elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  TransactionDetailsScreen(transaction: transaction),
+            ),
+          );
+        },
         leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE6F2EF),
-          child: Icon(icon, color: const Color(0xFF0B5D4D)),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(date),
-        trailing: Text(
-          amount,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: positive ? Colors.green : Colors.black87,
+          radius: 23,
+          backgroundColor: transaction.isIncome
+              ? Colors.green.shade100
+              : Colors.grey.shade200,
+          child: Icon(
+            transaction.icon,
+            color: transaction.isIncome
+                ? Colors.green.shade700
+                : Colors.black87,
           ),
         ),
+        title: Text(
+          transaction.merchant,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text('${transaction.category} • ${transaction.date}'),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              transaction.formattedAmount,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: transaction.isIncome
+                    ? Colors.green.shade700
+                    : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              transaction.status,
+              style: TextStyle(fontSize: 11, color: Colors.green.shade700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================
+// TRANSACTION DETAILS
+// ============================================================
+
+class TransactionDetailsScreen extends StatelessWidget {
+  final Transaction transaction;
+
+  const TransactionDetailsScreen({super.key, required this.transaction});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Transaction Details',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+
+            CircleAvatar(
+              radius: 38,
+              backgroundColor: transaction.isIncome
+                  ? Colors.green.shade100
+                  : Colors.grey.shade200,
+              child: Icon(
+                transaction.icon,
+                size: 38,
+                color: transaction.isIncome
+                    ? Colors.green.shade700
+                    : Colors.black87,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              transaction.merchant,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              transaction.formattedAmount,
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: transaction.isIncome
+                    ? Colors.green.shade700
+                    : Colors.black87,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                transaction.status,
+                style: TextStyle(
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            Card(
+              elevation: 0,
+              child: Column(
+                children: [
+                  _detailRow('Date', transaction.date),
+                  _detailRow('Time', transaction.time),
+                  _detailRow('Category', transaction.category),
+                  _detailRow('Payment Method', transaction.paymentMethod),
+                  _detailRow('Card', transaction.cardNumber),
+                  _detailRow('Reference ID', transaction.referenceId),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(title, style: TextStyle(color: Colors.grey.shade600)),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1003,65 +1019,194 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
         children: [
-          const SizedBox(height: 20),
-
           const CircleAvatar(
             radius: 42,
-            backgroundColor: Color(0xFFE6F2EF),
-            child: Icon(Icons.person, size: 48, color: Color(0xFF0B5D4D)),
+            backgroundColor: Color(0xFF0B5D4D),
+            child: Text(
+              'DR',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
 
           const SizedBox(height: 14),
 
-          const Text(
-            'Deep Rajput',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          const Center(
+            child: Text(
+              'Deep Rajput',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
           ),
 
           const SizedBox(height: 4),
 
-          Text('CardVault User', style: TextStyle(color: Colors.grey.shade600)),
+          Center(
+            child: Text(
+              'CardVault Customer',
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+          ),
 
           const SizedBox(height: 30),
 
-          _profileOption(
-            icon: Icons.person_outline,
-            title: 'Personal Information',
+          Card(
+            elevation: 0,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: const Text('Personal Information'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.lock_outline),
+                  title: const Text('Security'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.notifications_none),
+                  title: const Text('Notifications'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.settings_outlined),
+                  title: const Text('Settings'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
-
-          _profileOption(icon: Icons.security_outlined, title: 'Security'),
-
-          _profileOption(
-            icon: Icons.notifications_outlined,
-            title: 'Notifications',
-          ),
-
-          _profileOption(icon: Icons.settings_outlined, title: 'Settings'),
-
-          _profileOption(icon: Icons.help_outline, title: 'Help & Support'),
         ],
       ),
     );
   }
+}
 
-  Widget _profileOption({required IconData icon, required String title}) {
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE6F2EF),
-          child: Icon(icon, color: const Color(0xFF0B5D4D)),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
-      ),
-    );
+// ============================================================
+// TRANSACTION MODEL
+// ============================================================
+
+class Transaction {
+  final String merchant;
+  final String category;
+  final double amount;
+  final bool isIncome;
+  final String date;
+  final String time;
+  final String status;
+  final String paymentMethod;
+  final String cardNumber;
+  final String referenceId;
+  final IconData icon;
+
+  const Transaction({
+    required this.merchant,
+    required this.category,
+    required this.amount,
+    required this.isIncome,
+    required this.date,
+    required this.time,
+    required this.status,
+    required this.paymentMethod,
+    required this.cardNumber,
+    required this.referenceId,
+    required this.icon,
+  });
+
+  String get formattedAmount {
+    final prefix = isIncome ? '+' : '-';
+    return '$prefix ₹${amount.toStringAsFixed(0)}';
   }
 }
+
+// ============================================================
+// TRANSACTION DATA
+// ============================================================
+
+const List<Transaction> transactions = [
+  Transaction(
+    merchant: 'Amazon',
+    category: 'Shopping',
+    amount: 2499,
+    isIncome: false,
+    date: '24 Sep 2026',
+    time: '10:42 AM',
+    status: 'Completed',
+    paymentMethod: 'Credit Card',
+    cardNumber: '•••• 4582',
+    referenceId: 'CV-AMZ-45821',
+    icon: Icons.shopping_bag_outlined,
+  ),
+  Transaction(
+    merchant: 'Swiggy',
+    category: 'Food',
+    amount: 540,
+    isIncome: false,
+    date: '23 Sep 2026',
+    time: '08:15 PM',
+    status: 'Completed',
+    paymentMethod: 'Debit Card',
+    cardNumber: '•••• 7291',
+    referenceId: 'CV-SWG-72912',
+    icon: Icons.restaurant_outlined,
+  ),
+  Transaction(
+    merchant: 'Salary',
+    category: 'Income',
+    amount: 82000,
+    isIncome: true,
+    date: '22 Sep 2026',
+    time: '09:30 AM',
+    status: 'Credited',
+    paymentMethod: 'Bank Transfer',
+    cardNumber: 'Account **** 2048',
+    referenceId: 'CV-SAL-82001',
+    icon: Icons.account_balance_outlined,
+  ),
+  Transaction(
+    merchant: 'Electricity Bill',
+    category: 'Bills',
+    amount: 1850,
+    isIncome: false,
+    date: '20 Sep 2026',
+    time: '06:25 PM',
+    status: 'Completed',
+    paymentMethod: 'Debit Card',
+    cardNumber: '•••• 7291',
+    referenceId: 'CV-EB-18502',
+    icon: Icons.bolt_outlined,
+  ),
+  Transaction(
+    merchant: 'Flipkart',
+    category: 'Shopping',
+    amount: 3299,
+    isIncome: false,
+    date: '18 Sep 2026',
+    time: '04:12 PM',
+    status: 'Completed',
+    paymentMethod: 'Credit Card',
+    cardNumber: '•••• 4582',
+    referenceId: 'CV-FLK-32993',
+    icon: Icons.shopping_cart_outlined,
+  ),
+];
